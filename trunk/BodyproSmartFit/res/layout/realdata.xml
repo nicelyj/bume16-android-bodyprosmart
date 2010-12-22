@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="fill_parent" 
+  android:layout_height="fill_parent"> 
+	<TableLayout
+	android:layout_width="fill_parent" android:baselineAligned="true" android:layout_height="wrap_content">
+		<TableRow 
+		android:layout_height="wrap_content" 
+		android:layout_width="fill_parent">
+			<TextView 
+			android:layout_height="50sp" 
+			android:text="@+id/TextView04"
+			android:layout_width="fill_parent"/>
+		
+
+
+
+
+</TableRow>
+		<TableRow 
+		android:layout_height="wrap_content" 
+		android:layout_width="fill_parent">
+			<ImageView			 
+			android:layout_height="150sp" 
+			android:layout_width="100sp"
+			android:padding="3dip"/>
+			<TextView			
+			android:text="@+id/TextView02" 
+			android:layout_height="150sp" 
+			android:layout_width="100sp"
+			android:padding="3dip"/>
+		</TableRow>
+		<TableRow 
+		android:layout_height="wrap_content" 
+		android:layout_width="fill_parent">
+			<TextView 
+			android:layout_height="50sp" 
+			android:text="@+id/TextView04"
+			android:layout_width="fill_parent"
+			android:padding="3dip"/>
+		</TableRow>
+		<TableRow 
+		android:layout_height="wrap_content" 
+		android:layout_width="fill_parent">
+			<ImageView			 
+			android:layout_height="150sp" 
+			android:layout_width="100sp"
+			android:padding="3dip"/>
+			<TextView			
+			android:text="@+id/TextView02" 
+			android:layout_height="150sp" 
+			android:layout_width="100sp"
+			android:padding="3dip"/>
+		
+		</TableRow>
+	</TableLayout>
+	<LinearLayout
+		android:layout_height="wrap_content" 
+		android:layout_width="fill_parent" 
+		android:layout_marginTop="400sp">
+			<ImageButton
+			android:id = "@+id/exitBtn"
+			android:layout_height="50sp" 
+			android:layout_width="100sp" 
+			android:src="@drawable/icon"/>				
+	</LinearLayout>
+</RelativeLayout>
