@@ -25,7 +25,6 @@ public class mainActivity extends Activity implements OnClickListener{
 		// TODO Auto-generated method stub
 		if(v.getId() == R.id.startBtn)
 		{
-			//realdataActivity¸¦ ¿ÀÇÂÇÑ´Ù.
 			Intent intent = new Intent(getApplicationContext(), realdataActivity.class);
 			startActivity(intent);		
 		}
