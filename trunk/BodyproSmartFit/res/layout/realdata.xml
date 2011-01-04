@@ -22,7 +22,7 @@
 			<ImageView			 
 			android:padding="3dip" android:layout_width="120sp" android:layout_height="170sp"/>
 			<TextView			
-			android:padding="3dip" android:text="HR" android:gravity="center" android:textSize="100sp" android:layout_height="fill_parent" android:layout_width="200sp"/>
+			android:padding="3dip" android:text="HR" android:gravity="center" android:textSize="100sp" android:layout_height="fill_parent" android:layout_width="200sp" android:id="@+id/hrTextView"/>
 		</TableRow>
 		<TableRow 
 		android:layout_height="wrap_content" 

@@ -3,14 +3,19 @@ package Dslab.android.BodyproSmart;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
@@ -32,18 +37,54 @@ public class realdataActivity extends Activity implements OnClickListener{
 	private ArrayAdapter<String> mNewDevice;
 	//private ComponentName mService;
 	private final int MESSAGE_BTSEARCH = 1;
-	private IBluetoothService mBtService;
+	//private IBluetoothService mBtService;
 	
-	String items[] = {"item 1", "item 2"};
+	//Bluetooth
+	private BluetoothAdapter mBtAdapter	=null;
+	private BluetoothService mBtService=  null;
+	
+	//Message
+	public static final int REQUEST_CONNECT_DEVICE = 1;
+	public static final int REQUEST_ENABLE_BT = 2;
+	
+    public static final int MESSAGE_STATE_CHANGE = 1;
+    public static final int MESSAGE_READ = 2;
+    public static final int MESSAGE_WRITE = 3;
+    public static final int MESSAGE_DEVICE_NAME = 4;
+    public static final int MESSAGE_TOAST = 5;
+    
+    
+    public static final String DEVICE_NAME = "device_name";
+    public static final String TOAST = "toast";
+    
+    private TextView mhrText;
+    private int hrr = 0;
 
 	
+	String items[] = {"item 1", "item 2"};
+	
+		
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);		
 		setContentView(R.layout.realdata);
 		
-		startBtService();
+		//startBtService();
+        // Get local Bluetooth adapter
+        mBtAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        // If the adapter is null, then Bluetooth is not supported
+        if (mBtAdapter == null) {
+            Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+        
+        if(!mBtAdapter.isEnabled()){
+        	Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        	startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
+        }
 		
 		ImageButton exitBtn = (ImageButton)findViewById(R.id.exitBtn);
 		exitBtn.setOnClickListener(this);
@@ -54,6 +95,12 @@ public class realdataActivity extends Activity implements OnClickListener{
 		ImageButton connectBtn = (ImageButton)findViewById(R.id.connectBtn);
 		connectBtn.setOnClickListener(this);
 		
+		mhrText = (TextView)findViewById(R.id.hrTextView);
+		
+		mBtService = new BluetoothService(this,mHandler);
+		
+	
+
 	}
 
 	@Override
@@ -62,41 +109,23 @@ public class realdataActivity extends Activity implements OnClickListener{
 		if(v.getId() == R.id.exitBtn)
 			finish();
 		else if(v.getId() == R.id.searchBtn)
-		{			
+		{
 			
-			try {
-				if(mBtService != null)
-				{
-					int nd;
-					nd = mBtService.startSearch(BLUETOOTHSEARCH);
-					//Handler mHandler = new Handler();
-					//mHandler.postDelayed(new Runnable(){
-				    //	public void run()
-				    //	{
-				    //		
-				    //	}
-				    //}, 5000);	
-					
-					Log.i(TAG,String.format("find devs = %d", nd));
-				}
-				
-			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+				//int nd;
+				//nd = mBtService.startSearch(BLUETOOTHSEARCH);
+				Intent findDeviceIntent = new Intent(this, FindDeviceActivity.class);
+				startActivityForResult(findDeviceIntent, REQUEST_CONNECT_DEVICE);
+				//Log.i(TAG,String.format("find devs = %d", nd));
 			
-			//try {
-			 //   Thread.sleep(5000); // 1초 = 1000밀리초
-			//} catch (InterruptedException ignore) {}
+			//showDialog(BLUETOOTHSEARCH);
 
-			showDialog(BLUETOOTHSEARCH);
 		}
 		else if(v.getId() == R.id.connectBtn)
 		{
-			stopBtService();
+			//stopBtService();
 		}
 	}
-	
+	/*
 	private void startBtService(){
 		Intent intent = new Intent(this, BluetoothService.class);
 		boolean ret = bindService(intent,mConnection,Context.BIND_AUTO_CREATE);
@@ -118,8 +147,7 @@ public class realdataActivity extends Activity implements OnClickListener{
 		//if(stopService(intent))
 		//	Log.i(TAG, "Stoped BtService");		
 		//else
-		//	Log.i(TAG, "already Stoped BtService");
-			
+		//	Log.i(TAG, "already Stoped BtService");			
 		
 	}
 	
@@ -146,6 +174,8 @@ public class realdataActivity extends Activity implements OnClickListener{
 					.create();
 			break;
 		}		
+		
+		
 		return dlg;
 	}
 	
@@ -179,12 +209,13 @@ public class realdataActivity extends Activity implements OnClickListener{
 
 	}
 	
+	
 	private ServiceConnection mConnection = new ServiceConnection(){
 
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			// TODO Auto-generated method stub
-			mBtService = IBluetoothService.Stub.asInterface(service);
+			//mBtService = IBluetoothService.Stub.asInterface(service);
 			
 		}
 
@@ -196,6 +227,68 @@ public class realdataActivity extends Activity implements OnClickListener{
 		}
 
 	};
+	*/
+	
+	private final Handler mHandler = new Handler(){
+
+		@Override
+		public void handleMessage(Message msg) {
+			// TODO Auto-generated method stub
+			switch(msg.what){
+            case MESSAGE_READ:
+                byte[] readBuf = (byte[]) msg.obj;
+                // construct a string from the valid bytes in the buffer                
+        		if(readBuf[1]<0)
+        			hrr = (int)readBuf[1]+256;
+        		else
+        			hrr = (int)readBuf[1];        		
+                
+                Update();
+                
+                break;
+			
+			}
+		}
+		
+	};
+
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		// TODO Auto-generated method stub
+		super.onActivityResult(requestCode, resultCode, data);
+		
+		switch(requestCode){		
+		case REQUEST_CONNECT_DEVICE:
+			//if(requestCode == Activity.RESULT_OK){
+				String address = data.getExtras().getString(FindDeviceActivity.EXTRA_DEVICE_ADDRESS);
+				Toast.makeText(this, address, Toast.LENGTH_LONG).show();
+				
+				BluetoothDevice device = mBtAdapter.getRemoteDevice(address);
+				mBtService.connect(device);
+				
+				break;
+			//}
+		default : break;
+		}
+	}
+	
+	protected void Update(){
+		Runnable Updater = new Runnable(){
+
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				String msg = String.format("%d", hrr);
+				mhrText.setText(msg);				
+			}
+			
+		};
+		mHandler.post(Updater);
+	
+	}
+	
+	
 	
 	
 }
