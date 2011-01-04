@@ -12,6 +12,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -20,10 +21,13 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -54,10 +58,14 @@ public class realdataActivity extends Activity implements OnClickListener{
     public static final int MESSAGE_TOAST = 5;
     
     
+    
     public static final String DEVICE_NAME = "device_name";
     public static final String TOAST = "toast";
     
     private TextView mhrText;
+    private ImageView hrImage;
+    private Animation mheartbeatAni;
+    private ImageView connectState;
     private int hrr = 0;
 
 	
@@ -92,17 +100,20 @@ public class realdataActivity extends Activity implements OnClickListener{
 		ImageButton searchBtn = (ImageButton)findViewById(R.id.searchBtn);
 		searchBtn.setOnClickListener(this);
 		
-		ImageButton connectBtn = (ImageButton)findViewById(R.id.connectBtn);
-		connectBtn.setOnClickListener(this);
+		connectState = (ImageView)findViewById(R.id.connectState);
+		//connectBtn.setOnClickListener(this);
 		
 		mhrText = (TextView)findViewById(R.id.hrTextView);
 		
+		//mheartbeatAni = AnimationUtils.loadAnimation(this, R.anim.testanim);
+		mheartbeatAni = AnimationUtils.loadAnimation(this, R.anim.rotate);
+		hrImage = (ImageView)findViewById(R.id.heartbeatAni);
+
+
 		mBtService = new BluetoothService(this,mHandler);
 		
-	
-
 	}
-
+	
 	@Override
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
@@ -120,10 +131,11 @@ public class realdataActivity extends Activity implements OnClickListener{
 			//showDialog(BLUETOOTHSEARCH);
 
 		}
-		else if(v.getId() == R.id.connectBtn)
-		{
+		//else if(v.getId() == R.id.connectBtn)
+		//{
+		//	hrImage.startAnimation(mheartbeatAni);
 			//stopBtService();
-		}
+		//}
 	}
 	/*
 	private void startBtService(){
@@ -160,10 +172,10 @@ public class realdataActivity extends Activity implements OnClickListener{
 		case BLUETOOTHSEARCH:
 			dlg = new AlertDialog.Builder(this)
 					.setIcon(R.drawable.search_icon)
-					.setTitle("블루투스 장치 검색")
-					.setMessage("사용가능한 장치")
+					.setTitle("釉붾（�ъ뒪 �μ튂 寃�깋")
+					.setMessage("�ъ슜媛�뒫���μ튂")
 					.setView(createCustomView())
-					.setPositiveButton("확인", new DialogInterface.OnClickListener() {
+					.setPositiveButton("�뺤씤", new DialogInterface.OnClickListener() {
 						
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
@@ -235,6 +247,22 @@ public class realdataActivity extends Activity implements OnClickListener{
 		public void handleMessage(Message msg) {
 			// TODO Auto-generated method stub
 			switch(msg.what){
+			case MESSAGE_STATE_CHANGE:
+				
+				if(mBtService.getState() == mBtService.STATE_CONNECTED || 
+						mBtService.getState() == mBtService.STATE_CONNECTING)
+				{	
+					connectState.setBackgroundResource(R.drawable.connect_icon);					
+					
+				}
+				else
+				{
+					connectState.setBackgroundResource(R.drawable.connect_icon_over);					
+				}
+				break;
+				
+					
+						
             case MESSAGE_READ:
                 byte[] readBuf = (byte[]) msg.obj;
                 // construct a string from the valid bytes in the buffer                
@@ -258,7 +286,8 @@ public class realdataActivity extends Activity implements OnClickListener{
 		// TODO Auto-generated method stub
 		super.onActivityResult(requestCode, resultCode, data);
 		
-		switch(requestCode){		
+		switch(requestCode){	
+			
 		case REQUEST_CONNECT_DEVICE:
 			//if(requestCode == Activity.RESULT_OK){
 				String address = data.getExtras().getString(FindDeviceActivity.EXTRA_DEVICE_ADDRESS);
@@ -280,12 +309,12 @@ public class realdataActivity extends Activity implements OnClickListener{
 			public void run() {
 				// TODO Auto-generated method stub
 				String msg = String.format("%d", hrr);
-				mhrText.setText(msg);				
+				mhrText.setText(msg);	
+				hrImage.startAnimation(mheartbeatAni);				
 			}
 			
 		};
-		mHandler.post(Updater);
-	
+		mHandler.post(Updater);	
 	}
 	
 	
