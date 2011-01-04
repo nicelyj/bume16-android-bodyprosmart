@@ -53,7 +53,7 @@ public class BluetoothService{
 		
 	}
 	
-	private synchronized int getState()
+	public synchronized int getState()
 	{
 		return mState;
 			
