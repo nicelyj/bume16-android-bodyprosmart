@@ -16,6 +16,11 @@
         <activity 
         android:name = "realdataActivity"
         android:screenOrientation="portrait"/>
+        <activity
+        android:name = "FindDeviceActivity"
+        android:screenOrientation = "portrait"
+        android:theme = "@android:style/Theme.Dialog"
+        android:configChanges="orientation|keyboardHidden"/>        
         <service
         android:name = "BluetoothService" />
     </application>
