@@ -13,6 +13,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.drawable.AnimationDrawable;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -35,6 +39,16 @@ import android.widget.Toast;
 
 public class realdataActivity extends Activity implements OnClickListener{
 	
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+		
+		sm.unregisterListener(accL);
+		sm.unregisterListener(oriL);		
+		
+	}
+
 	//global var
 	private final String TAG = "BodyproSmart RDA";
 	private final int BLUETOOTHSEARCH = 1;
@@ -68,10 +82,17 @@ public class realdataActivity extends Activity implements OnClickListener{
     private ImageView connectState;
     private int hrr = 0;
 
-	
-	String items[] = {"item 1", "item 2"};
-	
-		
+	//sensor
+    private SensorManager sm;
+    private SensorEventListener accL;
+    private SensorEventListener oriL;
+    private Sensor oriSensor;
+    private Sensor accSensor;
+    private TextView accX, accY, accZ;
+    private TextView oriX, oriY, oriZ;
+    
+   
+    	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
@@ -112,7 +133,26 @@ public class realdataActivity extends Activity implements OnClickListener{
 
 		mBtService = new BluetoothService(this,mHandler);
 		
+		//sensor 등록
+		sm = (SensorManager)getSystemService(SENSOR_SERVICE);
+		oriSensor = sm.getDefaultSensor(Sensor.TYPE_ORIENTATION);	//방향
+		accSensor = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER); //가속도
+		accL = new accListener();
+		oriL = new oriListener();
+		
+		accX = (TextView)findViewById(R.id.accXText);
+		accY = (TextView)findViewById(R.id.accYText);
+		accZ = (TextView)findViewById(R.id.accZText);
+		oriX = (TextView)findViewById(R.id.oriXText);
+		oriY = (TextView)findViewById(R.id.oriYText);
+		oriZ = (TextView)findViewById(R.id.oriZText);
+		
+		sm.registerListener(accL, accSensor, SensorManager.SENSOR_DELAY_NORMAL);
+		sm.registerListener(oriL, oriSensor, SensorManager.SENSOR_DELAY_NORMAL);
+				
 	}
+	
+
 	
 	@Override
 	public void onClick(View v) {
@@ -317,7 +357,89 @@ public class realdataActivity extends Activity implements OnClickListener{
 		mHandler.post(Updater);	
 	}
 	
+	private class accListener implements SensorEventListener{
+		
+		private int sampleCnt = 0;
+		private int averageCnt = 0;
+		private int stepCnt = 0;
+		private float sampleAver = 0;
+		private float sampleSum = 0;
+		private boolean flag = false;
+
+		@Override
+		public void onAccuracyChanged(Sensor sensor, int accuracy) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void onSensorChanged(SensorEvent event) {
+			// TODO Auto-generated method stub
+			accX.setText("accX = "+Float.toString(event.values[0]));			
+			accY.setText("accY = "+Float.toString(event.values[1]));
+			accZ.setText("accZ = "+Float.toString(event.values[2]));
+			float acX, tmpX;
+			tmpX = event.values[0];
+			
+			//x축 기준 외부요인 없는걸로 가정
+			//500개 샘플 평균
+			if(sampleCnt >= 50){
+				sampleCnt = 0;
+				sampleAver = sampleSum / 50;
+				sampleSum = 0;
+			}
+			
+			acX = sampleAver - tmpX;
+			
+			if(flag == false)
+			{
+				if(acX < -0.8)
+					flag = true;
+			}
+			else if(flag == true)
+			{
+				if(acX > 0.8)
+				{
+					if(averageCnt > 10)
+					{
+						stepCnt++;
+						averageCnt = 0;
+						flag = false;
+						oriX.setText("Step = "+Integer.toString(stepCnt));
+					}
+				}
+				averageCnt++;
+			}
+			
+			sampleSum += tmpX;
+			sampleCnt++;	
+			Log.i("STEPCNT", Float.toString(sampleAver)+"--"+Integer.toString(averageCnt));
+			
+		}
+		
+	}
 	
+	private class oriListener implements SensorEventListener{
+
+
+		@Override
+		public void onAccuracyChanged(Sensor sensor, int accuracy) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void onSensorChanged(SensorEvent event) {
+			// TODO Auto-generated method stub
+			//oriX.setText("oriX = "+Float.toString(event.values[0]));
+			//oriY.setText("oriY = "+Float.toString(event.values[1]));
+			//oriZ.setText("oriZ = "+Float.toString(event.values[2]));
+						
+		}
+		
+		
+		
+	}
 	
 	
 }
