@@ -43,9 +43,53 @@
 		android:layout_width="fill_parent">
 			<ImageView			 
 			android:padding="3dip" android:layout_height="170sp"/>
-			<TextView			
-			android:padding="3dip" android:layout_height="fill_parent" android:text="STEPS" android:textSize="50sp" android:gravity="center"/>
-		
+			<LinearLayout 
+			android:id="@+id/LinearLayout01" 
+			android:layout_height="fill_parent" 
+			android:layout_width="fill_parent" android:orientation="vertical">
+			<TextView 
+			android:text="accX" 
+			android:textSize="15sp" 
+			android:id="@+id/accXText" 
+			android:layout_height="25sp" 
+			android:layout_width="fill_parent" 	
+			android:padding="3dip"/>
+			<TextView 
+			android:text="accY" 
+			android:textSize="15sp" 
+			android:id="@+id/accYText" 
+			android:layout_height="25sp" 
+			android:layout_width="fill_parent" 	
+			android:padding="3dip"/>
+			<TextView 
+			android:text="accZ" 
+			android:textSize="15sp" 
+			android:id="@+id/accZText" 
+			android:layout_height="25sp" 
+			android:layout_width="fill_parent" 	
+			android:padding="3dip"/>
+			<TextView 
+			android:text="oriX" 
+			android:textSize="15sp" 
+			android:id="@+id/oriXText" 
+			android:layout_height="25sp" 
+			android:layout_width="fill_parent" 	
+			android:padding="3dip"/>
+			<TextView 
+			android:text="oriY" 
+			android:textSize="15sp" 
+			android:id="@+id/oriYText" 
+			android:layout_height="25sp" 
+			android:layout_width="fill_parent" 	
+			android:padding="3dip"/>
+			<TextView 
+			android:text="oriZ" 
+			android:textSize="15sp" 
+			android:id="@+id/oriZText" 
+			android:layout_height="25sp" 
+			android:layout_width="fill_parent" 	
+			android:padding="3dip"/>
+			</LinearLayout>		
 		</TableRow>
 	</TableLayout>
 	<LinearLayout
