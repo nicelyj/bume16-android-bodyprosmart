@@ -1,5 +1,6 @@
 package Dslab.android.BodyproSmart;
 
+import Dslab.android.Mychart.myChart;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -12,6 +13,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.drawable.AnimationDrawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -70,8 +74,7 @@ public class realdataActivity extends Activity implements OnClickListener{
     public static final int MESSAGE_WRITE = 3;
     public static final int MESSAGE_DEVICE_NAME = 4;
     public static final int MESSAGE_TOAST = 5;
-    
-    
+        
     
     public static final String DEVICE_NAME = "device_name";
     public static final String TOAST = "toast";
@@ -90,6 +93,7 @@ public class realdataActivity extends Activity implements OnClickListener{
     private Sensor accSensor;
     private TextView accX, accY, accZ;
     private TextView oriX, oriY, oriZ;
+    myChart mchart = null;
     
    
     	
@@ -147,9 +151,14 @@ public class realdataActivity extends Activity implements OnClickListener{
 		oriY = (TextView)findViewById(R.id.oriYText);
 		oriZ = (TextView)findViewById(R.id.oriZText);
 		
-		sm.registerListener(accL, accSensor, SensorManager.SENSOR_DELAY_NORMAL);
+		sm.registerListener(accL, accSensor, SensorManager.SENSOR_DELAY_FASTEST);
 		sm.registerListener(oriL, oriSensor, SensorManager.SENSOR_DELAY_NORMAL);
-				
+		
+		//차트뷰
+		mchart = (myChart)findViewById(R.id.mychart);
+		
+		
+		
 	}
 	
 
@@ -350,7 +359,9 @@ public class realdataActivity extends Activity implements OnClickListener{
 				// TODO Auto-generated method stub
 				String msg = String.format("%d", hrr);
 				mhrText.setText(msg);	
-				hrImage.startAnimation(mheartbeatAni);				
+				hrImage.startAnimation(mheartbeatAni);
+				mchart.girdGraph(hrr);
+				
 			}
 			
 		};
@@ -383,9 +394,9 @@ public class realdataActivity extends Activity implements OnClickListener{
 			
 			//x축 기준 외부요인 없는걸로 가정
 			//500개 샘플 평균
-			if(sampleCnt >= 50){
+			if(sampleCnt >= 500){
 				sampleCnt = 0;
-				sampleAver = sampleSum / 50;
+				sampleAver = sampleSum / 500;
 				sampleSum = 0;
 			}
 			
@@ -400,7 +411,7 @@ public class realdataActivity extends Activity implements OnClickListener{
 			{
 				if(acX > 0.8)
 				{
-					if(averageCnt > 10)
+					if(averageCnt > 150)
 					{
 						stepCnt++;
 						averageCnt = 0;
@@ -435,11 +446,7 @@ public class realdataActivity extends Activity implements OnClickListener{
 			//oriY.setText("oriY = "+Float.toString(event.values[1]));
 			//oriZ.setText("oriZ = "+Float.toString(event.values[2]));
 						
-		}
-		
-		
-		
+		}		
 	}
-	
 	
 }
