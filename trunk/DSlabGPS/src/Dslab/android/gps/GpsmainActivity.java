@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -12,13 +13,16 @@ import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
+import com.google.android.maps.MyLocationOverlay;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.Projection;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Point;
 import android.location.Address;
 import android.location.Geocoder;
@@ -46,9 +50,10 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 	private GeoPoint geopoint;
 	private MapView mapview;
 	private MapController controller;
-	private boolean bLog = false;
 	private String fileName = "";		
 	private BufferedWriter bfw = null;
+	
+	private MyOverlay mMyOverlay;
 	
 	
 	static final int INI1 = 37565263;
@@ -58,13 +63,13 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
-        //¸Å´ÏÀú ¸¸µç´Ù
+        //ï¿½Å´ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½
         locmanager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-        //gps À§Ä¡Á¤º¸ ¿äÃ»
+        //gps ï¿½ï¿½Ä¡ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã»
         locmanager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-        //±âÁö±¹À¸·ÎºÎÅÍ À§Ä¡ Á¤º¸ ¾÷µ¥ÀÌÆ®
+        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îºï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
         //locmanager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0, this);
-        //ÁÖ¼Ò È®ÀÎ geocoder
+        //ï¿½Ö¼ï¿½ È®ï¿½ï¿½ geocoder
         geocoder = new Geocoder(this,Locale.KOREA);
         
         logInit();
@@ -82,6 +87,7 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
    	 //map control
         mapview = (MapView)findViewById(R.id.mapview);
         mapview.setBuiltInZoomControls(true);
+    	
         /*
         ZoomControls zoom = (ZoomControls)mapview.getZoomControls();
         ViewGroup.LayoutParams layout = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,ViewGroup.LayoutParams.FILL_PARENT);
@@ -95,7 +101,12 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
         controller.setCenter(geopoint);	        
         controller.setZoom(15);
         
-        setOverlay(geopoint);
+        //setOverlay(geopoint);
+        mMyOverlay = new MyOverlay(this, mapview);
+        mapview.getOverlays().add(mMyOverlay);
+        mMyOverlay.enableCompass();
+    	mMyOverlay.enableMyLocation();
+
         
     }
     
@@ -108,7 +119,7 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
         	alti = mylocation.getAltitude();
         	speed = mylocation.getSpeed();
         	
-        	//À§µµ°æµµ·Î ÇöÀç À§Ä¡ÀÇ ÁÖ¼Ò °¡Á®¿È
+        	//ï¿½ï¿½ï¿½ï¿½ï¿½æµµï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½Ö¼ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         	List<Address> address;
         	try {
     			address = geocoder.getFromLocation(lati, longi, 1);
@@ -143,6 +154,7 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
     	
     }
 
+    
 	@Override
 	public void onLocationChanged(Location location) {
 		// TODO Auto-generated method stub
@@ -195,14 +207,17 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 		return false;
 	}
 	
+	
 	public void setOverlay(GeoPoint point){
 		Bitmap icon = BitmapFactory.decodeResource(getResources(), R.drawable.icon);
 		IconOverlay overlay = new IconOverlay(icon,point);
 		
-		//¿À¹ö·¹ÀÌÃß°¡
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß°ï¿½
 		MapView map_view = (MapView)findViewById(R.id.mapview);
+		
 		List<Overlay> overlays = map_view.getOverlays();
-		overlays.add(overlay);
+		overlays.add(overlay);		
+		
 	}
 	
 	//maps overlay
@@ -217,8 +232,8 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 		
 		IconOverlay(Bitmap icon, GeoPoint initial){
 			mIcon = icon;
-			mOffsetX = 0 - icon.getWidth()/2;
-			mOffsetY = 0 - icon.getHeight()/2;
+			mOffsetX = 0 - icon.getWidth()/10;
+			mOffsetY = 0 - icon.getHeight()/10;
 			mPoint = initial;			
 		}
 		@Override
@@ -244,6 +259,103 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 		
 	}
 	
+	//map path overlay
+	
+	private class MyOverlay extends MyLocationOverlay{
+		
+		Location MyBeforeLoc;
+		Location MyCurrentLoc;
+		Path mPath;
+		Paint mPaint;
+		MapView mMapview;
+		Context mCtx;
+		float mDistance;
+		ArrayList<MyPathLocation> mMyPathLocationArray;
+		
+
+		public MyOverlay(Context context, MapView mapView) {
+			super(context, mapView);
+			// TODO Auto-generated constructor stub
+			mPath = new Path();
+			mPath.reset();
+			mPaint = new Paint();
+	    	mPaint.setAntiAlias(true);
+	    	mPaint.setDither(true);
+	    	mPaint.setColor(Color.RED);
+	    	mPaint.setStyle(Paint.Style.STROKE);
+	    	mPaint.setStrokeJoin(Paint.Join.ROUND);
+	    	mPaint.setStrokeCap(Paint.Cap.ROUND);
+	    	mPaint.setStrokeWidth(3);
+	    	mPaint.setTextSize(20);
+	    	mPaint.setStyle(Paint.Style.FILL);
+	    	mMyPathLocationArray = new ArrayList<MyPathLocation>();
+
+	    	mCtx = context;
+	    	mMapview = mapView;
+		}
+
+		
+
+		@Override
+		public boolean draw(Canvas canvas, MapView mapView,
+				boolean shadow, long when) {
+			// TODO Auto-generated method stub
+			
+			if(MyBeforeLoc != null && MyCurrentLoc != null)
+			{
+				mPath.reset();	
+				canvas.drawPath(mPath, mPaint);
+				updatePath();
+				mPaint.setStyle(Paint.Style.STROKE);				
+				canvas.drawPath(mPath, mPaint);
+				
+				mPaint.setStyle(Paint.Style.FILL);
+				canvas.drawTextOnPath(String.valueOf(mDistance), mPath, 0, 0, mPaint);
+			}
+			
+			return super.draw(canvas, mapView, shadow, when);
+			
+			
+		}
+		
+		@Override
+		public synchronized void onLocationChanged(Location location) {
+			// TODO Auto-generated method stub
+			super.onLocationChanged(location);
+			
+			MyBeforeLoc = MyCurrentLoc;
+			MyCurrentLoc = location;
+			if(MyBeforeLoc != null && MyCurrentLoc != null && MyBeforeLoc != MyCurrentLoc)
+			{	
+				mMyPathLocationArray.add(new MyPathLocation(MyBeforeLoc, MyCurrentLoc));
+				mDistance += MyCurrentLoc.distanceTo(MyBeforeLoc);
+		
+			}
+			else 
+				return;
+		}
+
+		public void updatePath()
+		{
+			for(int i = 0 ; i < mMyPathLocationArray.size() ; i++)
+			{
+				Point startPoint = new Point();
+				Point endPoint = new Point();
+				MyPathLocation temp = mMyPathLocationArray.get(i);
+				mMapview.getProjection().toPixels(new GeoPoint((int)(temp.mMyBeforeLocation.getLatitude()*1E6), (int)(temp.mMyBeforeLocation.getLongitude()*1E6)), startPoint);
+				mMapview.getProjection().toPixels(new GeoPoint((int)(temp.mMyCurrentLocation.getLatitude()*1E6), (int)(temp.mMyCurrentLocation.getLongitude()*1E6)), endPoint);
+				
+				Path p = new Path();			
+				p.reset();
+				p.moveTo(startPoint.x, startPoint.y);
+				p.lineTo(endPoint.x, endPoint.y);				
+				mPath.addPath(p);
+				
+			}
+		}
+		
+
+	}
 	
 	
 	private void logInit(){
@@ -280,6 +392,17 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 		Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();  
 	}
 	
+	class MyPathLocation
+	{
+		public Location mMyBeforeLocation;
+		public Location mMyCurrentLocation;
+		
+		public MyPathLocation(Location myBeforeLocation, Location myCurrentLocation)
+		{
+			mMyBeforeLocation = myBeforeLocation;
+			mMyCurrentLocation = myCurrentLocation;
+		}
+	}
     
     
 }
