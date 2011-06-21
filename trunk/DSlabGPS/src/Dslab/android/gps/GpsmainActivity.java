@@ -12,6 +12,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -31,13 +32,13 @@ public class GpsmainActivity extends Activity implements LocationListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
-        //¸Å´ÏÀú ¸¸µç´Ù
+        //ï¿½Å´ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½
         locmanager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-        //gps À§Ä¡Á¤º¸ ¿äÃ»
-        locmanager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-        //±âÁö±¹À¸·ÎºÎÅÍ À§Ä¡ Á¤º¸ ¾÷µ¥ÀÌÆ®
-        //locmanager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0, this);
-        //ÁÖ¼Ò È®ÀÎ geocoder
+        //gps ï¿½ï¿½Ä¡ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã»
+        //locmanager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îºï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
+        locmanager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0, this);
+        //ï¿½Ö¼ï¿½ È®ï¿½ï¿½ geocoder
         geocoder = new Geocoder(this,Locale.KOREA);
         
         Button btn = (Button)findViewById(R.id.StartGpsBtn);
@@ -50,8 +51,6 @@ public class GpsmainActivity extends Activity implements LocationListener {
 				
 			}
 		});
-        
-        
     }
     
     public void getLocations(){ 
@@ -62,7 +61,7 @@ public class GpsmainActivity extends Activity implements LocationListener {
         	longi = mylocation.getLongitude();
         	speed = mylocation.getSpeed();
         	
-        	//À§µµ°æµµ·Î ÇöÀç À§Ä¡ÀÇ ÁÖ¼Ò °¡Á®¿È
+        	//ï¿½ï¿½ï¿½ï¿½ï¿½æµµï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½Ö¼ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         	List<Address> address;
         	try {
     			address = geocoder.getFromLocation(lati, longi, 1);
@@ -92,18 +91,13 @@ public class GpsmainActivity extends Activity implements LocationListener {
     		Toast.makeText(this, "Please try again later", Toast.LENGTH_SHORT).show();
     	}
     	    	
-    	
-    	
-    	
-    	
-    	
     }
 
-	@Override
+	@Override  
 	public void onLocationChanged(Location location) {
 		// TODO Auto-generated method stub
 		mylocation = location;
-		
+
 	}
 
 	@Override
@@ -121,6 +115,7 @@ public class GpsmainActivity extends Activity implements LocationListener {
 	@Override
 	public void onStatusChanged(String provider, int status, Bundle extras) {
 		// TODO Auto-generated method stub
+	
 		
 	}
     
