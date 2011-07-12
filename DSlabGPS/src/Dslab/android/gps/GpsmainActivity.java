@@ -2,12 +2,14 @@ package Dslab.android.gps;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.Vector;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
@@ -16,7 +18,11 @@ import com.google.android.maps.MapView;
 import com.google.android.maps.MyLocationOverlay;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.Projection;
+
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -25,6 +31,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
 import android.location.Address;
+import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
@@ -47,6 +54,7 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 	private double alti=0;
 	private float speed=0;
 	private int mCnt=0;
+	private float mDistance=0;
 	private GeoPoint geopoint;
 	private MapView mapview;
 	private MapController controller;
@@ -54,25 +62,47 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 	private BufferedWriter bfw = null;
 	
 	private MyOverlay mMyOverlay;
+	private historyOverlay mHistoryOverlay;
+	
+	private TextView latitudeText;
+	private TextView longotudeText;
+	private TextView altitudeText;
+	private TextView speedText;
+	private TextView addressText;
+	private TextView gpscntText;
+	private TextView distanceText;
+	
+    private String provider;
 	
 	
-	static final int INI1 = 37565263;
-	static final int INI2 = 126980667;
+	static final int INI1 = 36210148;
+	static final int INI2 = 127210104;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
-        //�Ŵ��� �����
-        locmanager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-        //gps ��ġ���� ��û
-        locmanager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-        //���������κ��� ��ġ ���� ������Ʈ
-        //locmanager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0, this);
-        //�ּ� Ȯ�� geocoder
+        //占신댐옙占쏙옙 占쏙옙占쏙옙占�        
+        //locmanager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        //gps 占쏙옙치占쏙옙占쏙옙 占쏙옙청
+        //locmanager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+        
+        //locmanager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
+
+        getGPS();
         geocoder = new Geocoder(this,Locale.KOREA);
         
         logInit();
+        
+        
+    	latitudeText = (TextView)findViewById(R.id.latitudeText);
+    	longotudeText = (TextView)findViewById(R.id.longitudeText);
+    	altitudeText = (TextView)findViewById(R.id.altitudeText);
+    	speedText = (TextView)findViewById(R.id.speedText);
+    	addressText = (TextView)findViewById(R.id.addressText);
+    	gpscntText = (TextView)findViewById(R.id.cntText);
+    	distanceText = (TextView)findViewById(R.id.distanceText);
+    	
         
         Button btn = (Button)findViewById(R.id.StartGpsBtn);
         btn.setOnClickListener(new View.OnClickListener() {
@@ -84,31 +114,209 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 			}
 		});
         
+        btn = (Button)findViewById(R.id.LoadTrackBtn);
+        btn.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				loadLocations();
+				
+				
+			}
+		});
+        
    	 //map control
         mapview = (MapView)findViewById(R.id.mapview);
         mapview.setBuiltInZoomControls(true);
     	
-        /*
-        ZoomControls zoom = (ZoomControls)mapview.getZoomControls();
-        ViewGroup.LayoutParams layout = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,ViewGroup.LayoutParams.FILL_PARENT);
-        zoom.setLayoutParams(layout);
-        zoom.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
-        mapview.addView(zoom);
-        */
-        
-    	controller = mapview.getController();
+     	controller = mapview.getController();
         geopoint = new GeoPoint(INI1,INI2);       
         controller.setCenter(geopoint);	        
         controller.setZoom(15);
         
         //setOverlay(geopoint);
-        mMyOverlay = new MyOverlay(this, mapview);
-        mapview.getOverlays().add(mMyOverlay);
-        mMyOverlay.enableCompass();
-    	mMyOverlay.enableMyLocation();
-
+        //mMyOverlay = new MyOverlay(this, mapview);
+        //mapview.getOverlays().add(mMyOverlay);
+        //mMyOverlay.enableCompass();
+    	//mMyOverlay.enableMyLocation();
+    	
+    	mHistoryOverlay = new historyOverlay(this,mapview);
+    	mapview.getOverlays().add(mHistoryOverlay);
+    	mHistoryOverlay.enableCompass();
+    	mHistoryOverlay.enableMyLocation();
         
     }
+    private void loadLocations(){ 
+    	
+    	loadRawPoint();
+    	
+    	int size = pointvec.size();
+    	Loc loc = new Loc();
+    	for(int i = 0; i<size; i++){
+    		loc = pointvec.get(i);
+    		Log.i("GPSRAWDATA", Double.toString(loc.lati)+", "+Double.toString(loc.longi)+", "+Double.toString(loc.alti));
+    	}
+    	mHistoryOverlay.updateRawdata(pointvec);
+    	
+    }
+    public class Loc{
+    	public double lati = 0 ;
+    	public double longi = 0;
+    	public double alti = 0;
+
+    }
+    Vector<Loc> pointvec = new Vector<Loc>();   
+    
+    private void loadRawPoint(){    	
+    	
+    	String ess = Environment.getExternalStorageState();  
+		String sdCardPath = null;
+		// get SDcard mount
+		if(ess.equals(Environment.MEDIA_MOUNTED)) {  
+		    sdCardPath = Environment.getExternalStorageDirectory().getAbsolutePath()+"/bodypro";		      
+		} else {  
+		    showMsg("SD Card not ready!");
+		    return ;
+		}
+		// folder is notthing = create
+		File fpath = new File(sdCardPath);
+		if(!fpath.isDirectory()){
+			fpath.mkdir();		}	
+		
+		fileName = sdCardPath+"gpstest.txt";
+		    	
+		String tmpstr="";
+		String intensitytmp = "";
+		boolean bGet = false;	
+		int fourcnt = 0;
+						
+		try{
+			FileInputStream fis = new FileInputStream(new File(fileName));			
+			int filesize = fis.available();
+			byte[] tempdata = new byte[(int)filesize];
+			fis.read(tempdata);
+			fis.close();
+			String strtmp = "";			
+			int cnt=0;
+			boolean bStart=true;
+			Loc loc = null;
+			for(byte ch : tempdata){
+				char cbuff = (char)ch;				
+				if(bStart){					
+					if(cbuff == ','){
+						
+						if(cnt == 0)
+						{
+							loc = new Loc();
+							cnt++;
+						}
+						else if(cnt == 1)
+						{							
+							loc.lati = Double.parseDouble(strtmp);
+							cnt++;
+						}
+						else if(cnt == 2)
+						{
+							loc.longi = Double.parseDouble(strtmp);
+							cnt++;
+						}
+						else if(cnt == 3){
+							loc.alti = Double.parseDouble(strtmp);							
+							pointvec.add(loc);							
+							cnt = 0;
+							bStart = false;							
+							}
+						
+						strtmp = "";
+						
+						}
+					else
+						strtmp += cbuff;					
+				}
+				
+				if(cbuff == '\n')
+					bStart = true;				
+			}
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+		
+		
+		
+		
+    }
+    
+    private static boolean result = false;
+    public void getGPS(){
+                
+      
+        locmanager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        
+        //GPS 환경설정
+        Criteria criteria = new Criteria();
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);       // 정확도
+        criteria.setPowerRequirement(Criteria.POWER_LOW);   // 전원 소비량
+        criteria.setAltitudeRequired(false);                // 고도, 높이 값을 얻어 올지를 결정
+        criteria.setBearingRequired(false);                 // provider 기본 정보
+        criteria.setSpeedRequired(false);                   //속도
+        criteria.setCostAllowed(true);                      //위치 정보를 얻어 오는데 들어가는 금전적 비용
+         
+        //상기 조건을 이용하여 알맞은 GPS선택후 위치정보를 획득
+         
+        //manifest xml  : <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />//로케이션 메니저의 provider
+        provider = locmanager.getBestProvider(criteria, true);
+        
+        if(provider == null){//GPS 장치가 없는 휴대폰이거나 설정이 꺼져있는 경우 바로 alert 처리하거나 GPS 설정으로 이동
+            result = chkGpsService();
+            if(result){
+            	getGPS();
+            }
+             
+        }else{
+        	mylocation = locmanager.getLastKnownLocation(provider);//가장 최근의 로케이션을 가져온다. 안드로이드 폰이 꺼져있었거나 다른 위치로 이동한 경우 값이 없다.
+            //location = locationManager.getLastKnownLocation( LocationManager.NETWORK_PROVIDER );
+            //이럴경우는 NETWORK_PROVIDER 로 부터 새로운 location을 지정 받는다.
+            //특정조건(시간, 거리)이 되면  Listener를 invoke 시킨다.: 여기서는 1초 마다 5km)
+        	locmanager.requestLocationUpdates(provider, 0, 0, this);//현재정보를 업데이트
+             
+            if(mylocation == null){
+            	mylocation = locmanager.getLastKnownLocation(provider);
+                if(mylocation == null){//그래도 null인경우 alert;
+                	Toast.makeText(this, "GPS connect fail", Toast.LENGTH_SHORT).show();
+                    
+                    
+                }
+
+            }
+        }	
+    }
+    private boolean chkGpsService() {
+    	//GPS의 설정여부 확인 및 자동 설정 변경
+        String gs = android.provider.Settings.Secure.getString(getContentResolver(),
+        android.provider.Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+        Log.w("chkGpsService" , "get GPs Service" );
+         
+        if (gs.indexOf("gps", 0) < 0) {
+            Log.w("chkGpsService" , "status: off" );
+            // GPS OFF 일때 Dialog 띄워서 설정 화면으로 이동.
+            AlertDialog.Builder gsDialog = new AlertDialog.Builder(this);
+            gsDialog.setTitle("GPS Status OFF !!!");
+            gsDialog.setMessage("Change Setting !!");
+            gsDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    // GPS설정 화면으로 이동
+                    Intent intent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    intent.addCategory(Intent.CATEGORY_DEFAULT);
+                    startActivity(intent);
+                }
+            }).create().show();
+            return false;
+        } else {
+            Log.w("chkGpsService" , "status: on" );                
+            return true;
+        }
+    } 
     
     public void getLocations(){ 
     	StringBuffer juso = new StringBuffer();
@@ -119,7 +327,6 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
         	alti = mylocation.getAltitude();
         	speed = mylocation.getSpeed();
         	
-        	//�����浵�� ���� ��ġ�� �ּ� ������
         	List<Address> address;
         	try {
     			address = geocoder.getFromLocation(lati, longi, 1);
@@ -135,18 +342,13 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
     			e.printStackTrace();
     		}
     		
-    		TextView tv = (TextView)findViewById(R.id.latitudeText);
-        	tv.setText(Double.toString(lati));
-        	tv = (TextView)findViewById(R.id.longitudeText);
-        	tv.setText(Double.toString(longi));
-        	tv = (TextView)findViewById(R.id.speedText);
-        	tv.setText(Double.toString(speed));
-        	tv = (TextView)findViewById(R.id.addressText);
-        	tv.setText(juso);
-        	tv = (TextView)findViewById(R.id.cntText);
-        	tv.setText(Integer.toString(mCnt));
-        	
-    		
+    		latitudeText.setText(Double.toString(lati));
+    		altitudeText.setText(Double.toString(alti));
+    		longotudeText.setText(Double.toString(longi));        	
+        	speedText.setText(Double.toString(speed));
+        	addressText.setText(juso);        	
+        	gpscntText.setText(Integer.toString(mCnt));    	
+        	distanceText.setText(Float.toString(mDistance));
     	}
     	else{
     		Toast.makeText(this, "Please try again later", Toast.LENGTH_SHORT).show();
@@ -169,7 +371,14 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 		String str = "";
 		Calendar time = Calendar.getInstance();
 		String just = String.format("%02d:%02d:%02d.%03d",time.get(Calendar.HOUR_OF_DAY),time.get(Calendar.MINUTE),time.get(Calendar.SECOND),time.get(Calendar.MILLISECOND));
-		str = just+ "," + Double.toString(mylocation.getLatitude())+","+Double.toString(mylocation.getLongitude())+","+Float.toString(mylocation.getSpeed())+"\r\n";		
+		str = just+ ","
+		+ Double.toString(mylocation.getLongitude())+","
+		+ Double.toString(mylocation.getLatitude())+","		
+		+ Double.toString(mylocation.getAltitude())+","
+		+ Float.toString(mylocation.getSpeed())+","
+		+ Float.toString(mDistance)+","
+		+"\r\n";		
+		
 		Log.i("GPSTEST",str);
 		try {				
 			bfw.write(str);
@@ -212,7 +421,7 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 		Bitmap icon = BitmapFactory.decodeResource(getResources(), R.drawable.icon);
 		IconOverlay overlay = new IconOverlay(icon,point);
 		
-		//���������߰�
+		//占쏙옙占쏙옙占쏙옙占쏙옙占쌩곤옙
 		MapView map_view = (MapView)findViewById(R.id.mapview);
 		
 		List<Overlay> overlays = map_view.getOverlays();
@@ -259,7 +468,66 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 		
 	}
 	
+	private class historyOverlay extends MyLocationOverlay{
+
+		Path mPath;
+		Paint mPaint;
+		MapView mMapview;
+		
+		public historyOverlay(Context context, MapView mapView) {
+			super(context, mapView);
+			// TODO Auto-generated constructor stub
+			mPath = new Path();
+			mPath.reset();
+			mPaint = new Paint();
+	    	mPaint.setAntiAlias(true);
+	    	mPaint.setDither(true);
+	    	mPaint.setColor(Color.RED);
+	    	mPaint.setStyle(Paint.Style.STROKE);
+	    	mPaint.setStrokeJoin(Paint.Join.ROUND);
+	    	mPaint.setStrokeCap(Paint.Cap.ROUND);
+	    	mPaint.setStrokeWidth(3);
+	    	mPaint.setTextSize(20);
+	    	mPaint.setStyle(Paint.Style.FILL);
+	    	mMapview = mapView;
+		}
+		
+		
+		
+		@Override
+		public synchronized boolean draw(Canvas canvas, MapView mapView,
+				boolean shadow, long when) {
+			// TODO Auto-generated method stub
+			mPaint.setStyle(Paint.Style.STROKE);				
+			canvas.drawPath(mPath, mPaint);
+			
+			return super.draw(canvas, mapView, shadow, when);
+		}
+
+
+
+		public void updateRawdata(Vector<Loc> vecloc){
+			
+			for(int i = 0 ; i < vecloc.size(); i++)
+			{				 
+				Point startPoint = new Point();
+				Point endPoint = new Point();
+				Loc loc = vecloc.get(i);
+				mMapview.getProjection().toPixels(new GeoPoint((int)(loc.lati*1E6), (int)(loc.longi*1E6)), startPoint);
+				mMapview.getProjection().toPixels(new GeoPoint((int)(loc.lati*1E6), (int)(loc.longi*1E6)), endPoint);
+				
+				Path p = new Path();			
+				p.reset();
+				p.moveTo(startPoint.x, startPoint.y);
+				p.lineTo(endPoint.x, endPoint.y);				
+				mPath.addPath(p);
+			}
+			
+		}
+	}
+	
 	//map path overlay
+	
 	
 	private class MyOverlay extends MyLocationOverlay{
 		
@@ -269,7 +537,7 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 		Paint mPaint;
 		MapView mMapview;
 		Context mCtx;
-		float mDistance;
+		
 		ArrayList<MyPathLocation> mMyPathLocationArray;
 		
 
@@ -313,10 +581,10 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 				canvas.drawTextOnPath(String.valueOf(mDistance), mPath, 0, 0, mPaint);
 			}
 			
-			return super.draw(canvas, mapView, shadow, when);
-			
+			return super.draw(canvas, mapView, shadow, when);			
 			
 		}
+		
 		
 		@Override
 		public synchronized void onLocationChanged(Location location) {
@@ -329,7 +597,7 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 			{	
 				mMyPathLocationArray.add(new MyPathLocation(MyBeforeLoc, MyCurrentLoc));
 				mDistance += MyCurrentLoc.distanceTo(MyBeforeLoc);
-		
+								
 			}
 			else 
 				return;
@@ -349,9 +617,27 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 				p.reset();
 				p.moveTo(startPoint.x, startPoint.y);
 				p.lineTo(endPoint.x, endPoint.y);				
-				mPath.addPath(p);
-				
+				mPath.addPath(p);				
 			}
+		}
+		
+		public void updateRawdata(Vector<Loc> vecloc){
+			
+			for(int i = 0 ; i < vecloc.size(); i++)
+			{				 
+				Point startPoint = new Point();
+				Point endPoint = new Point();
+				Loc loc = vecloc.get(i);
+				mMapview.getProjection().toPixels(new GeoPoint((int)(loc.lati*1E6), (int)(loc.longi*1E6)), startPoint);
+				mMapview.getProjection().toPixels(new GeoPoint((int)(loc.lati*1E6), (int)(loc.longi*1E6)), endPoint);
+				
+				Path p = new Path();			
+				p.reset();
+				p.moveTo(startPoint.x, startPoint.y);
+				p.lineTo(endPoint.x, endPoint.y);				
+				mPath.addPath(p);
+			}
+			
 		}
 		
 

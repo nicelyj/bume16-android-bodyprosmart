@@ -2,21 +2,41 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:background="@drawable/hp_onsen">
-    <LinearLayout android:layout_width="fill_parent" android:id="@+id/linearLayout1" android:layout_height="wrap_content">
-        <Button android:id="@+id/StartGpsBtn" android:layout_width="wrap_content" android:text="Button" android:layout_height="wrap_content"></Button>
-        <TextView android:layout_weight="1" android:textColor="#FF000000" android:layout_marginTop="5dp" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="Latitude :" android:id="@+id/cntText"></TextView>
-    </LinearLayout>
-    <LinearLayout android:layout_width="fill_parent" android:id="@+id/LinearLayout01" android:orientation="vertical" android:layout_height="0dp">
-        <TextView android:id="@+id/textView1" android:layout_height="wrap_content" android:layout_width="fill_parent" android:layout_weight="1" android:text="Latitude :" android:textColor="#FF000000" android:layout_marginTop="5dp"></TextView>
-        <TextView android:text="TextView" android:layout_height="wrap_content" android:layout_width="fill_parent" android:layout_weight="1" android:id="@+id/latitudeText" android:textColor="#FF000000" android:layout_marginTop="5dp"></TextView>
-        <TextView android:layout_height="wrap_content" android:id="@+id/TextView02" android:layout_width="fill_parent" android:layout_weight="1" android:text="Longitude" android:textColor="#FF000000" android:layout_marginTop="5dp"></TextView>
-        <TextView android:text="TextView" android:layout_height="wrap_content" android:layout_width="fill_parent" android:layout_weight="1" android:id="@+id/longitudeText" android:textColor="#FF000000" android:layout_marginTop="5dp"></TextView>
-        <TextView android:layout_weight="1" android:layout_width="fill_parent" android:layout_height="wrap_content" android:id="@+id/TextView04" android:text="Speed" android:textColor="#FF000000" android:layout_marginTop="5dp"></TextView>
-        <TextView android:layout_weight="1" android:text="TextView" android:layout_width="fill_parent" android:layout_height="wrap_content" android:id="@+id/speedText" android:textColor="#FF000000" android:layout_marginTop="5dp"></TextView>
-        <TextView android:layout_weight="1" android:layout_width="fill_parent" android:layout_height="wrap_content" android:id="@+id/TextView05" android:text="Address" android:textColor="#FF000000" android:layout_marginTop="5dp"></TextView>
-        <TextView android:layout_weight="1" android:text="TextView" android:layout_width="fill_parent" android:layout_height="wrap_content" android:id="@+id/addressText" android:textColor="#FF000000" android:layout_marginTop="5dp"></TextView>
+    android:layout_height="fill_parent" android:background="#ffffffff">
+    <LinearLayout android:layout_width="fill_parent" android:id="@+id/linearLayout1" android:orientation="horizontal" android:layout_height="50dp">
+        <Button android:id="@+id/StartGpsBtn" android:layout_height="fill_parent" android:layout_width="fill_parent" android:layout_weight="1" android:text="Start"></Button>
+        <Button android:layout_width="fill_parent" android:layout_weight="1" android:layout_height="fill_parent" android:text="Load Track" android:id="@+id/LoadTrackBtn"></Button>
+        <LinearLayout android:id="@+id/linearLayout3" android:layout_height="fill_parent" android:layout_weight="1" android:layout_width="fill_parent" android:orientation="vertical">
+            <LinearLayout android:layout_weight="1" android:orientation="vertical" android:id="@+id/LinearLayout08" android:layout_width="fill_parent" android:layout_height="fill_parent">
+                <TextView android:layout_weight="1" android:text="TextView" android:layout_width="fill_parent" android:textColor="#FF000000" android:id="@+id/cntText" android:layout_height="fill_parent" android:textSize="10dp" android:gravity="center"></TextView>
+            </LinearLayout>
+            <LinearLayout android:layout_weight="1" android:id="@+id/LinearLayout07" android:layout_width="fill_parent" android:layout_height="fill_parent" android:orientation="horizontal">
+                <TextView android:layout_weight="1" android:text="TextView" android:layout_width="fill_parent" android:textColor="#FF000000" android:layout_height="fill_parent" android:textSize="10dp" android:gravity="center" android:id="@+id/distanceText"></TextView>
+                <TextView android:layout_width="fill_parent" android:textColor="#FF000000" android:layout_height="fill_parent" android:textSize="10dp" android:text="m" android:layout_weight="7" android:gravity="center" android:id="@+id/TextVeiw99"></TextView>
+            </LinearLayout>
+        </LinearLayout>
+        <LinearLayout android:orientation="vertical" android:id="@+id/LinearLayout01" android:layout_width="fill_parent" android:layout_height="fill_parent" android:layout_weight="1">
+            <LinearLayout android:layout_weight="1" android:orientation="horizontal" android:id="@+id/LinearLayout03" android:layout_width="fill_parent" android:layout_height="fill_parent">
+                <TextView android:text="Latitude :" android:layout_width="fill_parent" android:textColor="#FF000000" android:id="@+id/textView1" android:layout_height="wrap_content" android:textSize="7dp" android:layout_weight="2" android:gravity="right"></TextView>
+                <TextView android:text="TextView" android:layout_width="fill_parent" android:textColor="#FF000000" android:id="@+id/latitudeText" android:layout_height="wrap_content" android:textSize="7dp" android:layout_weight="1" android:paddingLeft="2dp"></TextView>
+            </LinearLayout>
+            <LinearLayout android:layout_weight="1" android:orientation="horizontal" android:id="@+id/LinearLayout04" android:layout_width="fill_parent" android:layout_height="fill_parent">
+                <TextView android:layout_width="fill_parent" android:textColor="#FF000000" android:id="@+id/TextView02" android:layout_height="wrap_content" android:textSize="7dp" android:layout_weight="2" android:text="Longitude :" android:gravity="right"></TextView>
+                <TextView android:text="TextView" android:layout_width="fill_parent" android:textColor="#FF000000" android:id="@+id/longitudeText" android:layout_height="wrap_content" android:textSize="7dp" android:layout_weight="1" android:paddingLeft="2dp"></TextView>
+            </LinearLayout>
+            <LinearLayout android:layout_weight="1" android:orientation="horizontal" android:id="@+id/LinearLayout06" android:layout_width="fill_parent" android:layout_height="fill_parent">
+                <TextView android:layout_width="fill_parent" android:textColor="#FF000000" android:id="@+id/TextView01" android:layout_height="wrap_content" android:textSize="7dp" android:layout_weight="2" android:text="Altitude :" android:gravity="right"></TextView>
+                <TextView android:text="TextView" android:layout_width="fill_parent" android:textColor="#FF000000" android:layout_height="wrap_content" android:id="@+id/altitudeText" android:textSize="7dp" android:layout_weight="1" android:paddingLeft="2dp"></TextView>
+            </LinearLayout>
+            <LinearLayout android:id="@+id/LinearLayout05" android:layout_width="fill_parent" android:orientation="horizontal" android:layout_height="fill_parent" android:layout_weight="1">
+                <TextView android:layout_width="fill_parent" android:textColor="#FF000000" android:id="@+id/TextView04" android:layout_height="wrap_content" android:textSize="7dp" android:layout_weight="2" android:text="Speed :" android:gravity="right"></TextView>
+                <TextView android:text="TextView" android:layout_width="fill_parent" android:textColor="#FF000000" android:id="@+id/speedText" android:layout_height="wrap_content" android:textSize="7dp" android:layout_weight="1" android:paddingLeft="2dp"></TextView>
+            </LinearLayout>
+            <LinearLayout android:id="@+id/linearLayout2" android:layout_width="fill_parent" android:orientation="horizontal" android:layout_height="fill_parent" android:layout_weight="1">
+                <TextView android:layout_width="fill_parent" android:textColor="#FF000000" android:id="@+id/TextView05" android:layout_height="wrap_content" android:textSize="7dp" android:layout_weight="2" android:text="Address :" android:gravity="right"></TextView>
+                <TextView android:text="TextView" android:layout_width="fill_parent" android:textColor="#FF000000" android:id="@+id/addressText" android:layout_height="wrap_content" android:textSize="7dp" android:layout_weight="1" android:paddingLeft="2dp"></TextView>
+            </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
     <LinearLayout android:id="@+id/LinearLayout02" android:layout_width="fill_parent" android:layout_height="fill_parent">
     	<com.google.android.maps.MapView
