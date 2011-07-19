@@ -141,10 +141,7 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
         //mMyOverlay.enableCompass();
     	//mMyOverlay.enableMyLocation();
     	
-    	mHistoryOverlay = new historyOverlay(this,mapview);
-    	mapview.getOverlays().add(mHistoryOverlay);
-    	mHistoryOverlay.enableCompass();
-    	mHistoryOverlay.enableMyLocation();
+    	
         
     }
     private void loadLocations(){ 
@@ -158,7 +155,11 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
     		Log.i("GPSRAWDATA", Double.toString(loc.lati)+", "+Double.toString(loc.longi)+", "+Double.toString(loc.alti));
     		
     	}
-    	mHistoryOverlay.updateRawdata(pointvec);    	
+    	//mHistoryOverlay.updateRawdata(pointvec);  
+    	mHistoryOverlay = new historyOverlay(this,mapview,pointvec);
+    	mapview.getOverlays().add(mHistoryOverlay);
+    	mHistoryOverlay.enableCompass();
+    	mHistoryOverlay.enableMyLocation();
     	
     }
     public class Loc{
@@ -209,12 +210,12 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 						}
 						else if(cnt == 1)
 						{							
-							loc.lati = Double.parseDouble(strtmp);
+							loc.longi = Double.parseDouble(strtmp);
 							cnt++;
 						}
 						else if(cnt == 2)
 						{
-							loc.longi = Double.parseDouble(strtmp);
+							loc.lati = Double.parseDouble(strtmp);
 							cnt++;
 						}
 						else if(cnt == 3){
@@ -467,8 +468,9 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 		Path mPath;
 		Paint mPaint;
 		MapView mMapview;
+		Vector<Loc> mVecloc;
 		
-		public historyOverlay(Context context, MapView mapView) {
+		public historyOverlay(Context context, MapView mapView, Vector<Loc> vecloc) {
 			super(context, mapView);
 			// TODO Auto-generated constructor stub
 			mPath = new Path();
@@ -484,6 +486,7 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 	    	mPaint.setTextSize(20);
 	    	mPaint.setStyle(Paint.Style.FILL);
 	    	mMapview = mapView;
+	    	mVecloc = vecloc;
 		}
 		
 		
@@ -492,9 +495,12 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 		public synchronized boolean draw(Canvas canvas, MapView mapView,
 				boolean shadow, long when) {
 			// TODO Auto-generated method stub
+			mPath.reset();	
+			canvas.drawPath(mPath, mPaint);
+			Log.i("DARWMAPS","DRAWMAPS");			
+			updateRawdata(mVecloc);
 			mPaint.setStyle(Paint.Style.STROKE);				
 			canvas.drawPath(mPath, mPaint);
-			Log.i("DARWMAPS","DRAWMAPS");
 			
 			return super.draw(canvas, mapView, shadow, when);
 		}
@@ -504,23 +510,17 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 			Point startPoint = new Point();
 			
 			Loc loc = vecloc.get(0);
-		
-			
-			int a = (int)(loc.lati*1E6);
-			int b = (int)(loc.longi*1E6);
-			
-			GeoPoint geo = new GeoPoint((int)(loc.lati*1E6), (int)(loc.longi*1E6));
-			
 			mMapview.getProjection().toPixels(new GeoPoint((int)(loc.lati*1E6), (int)(loc.longi*1E6)), startPoint);
+			
 			Path p = new Path();			
 			p.reset();
 			p.moveTo(startPoint.x, startPoint.y);
 			
-			for(int i = 1 ; i < vecloc.size(); i++)			
+			for(int i = 1 ; i < vecloc.size(); i++)
 			{	
-				loc = vecloc.get(i);
+				loc = vecloc.get(i);				
 				Point endPoint = new Point();
-				mMapview.getProjection().toPixels(new GeoPoint((int)(loc.lati*1E6), (int)(loc.longi*1E6)), endPoint);			
+				mMapview.getProjection().toPixels(new GeoPoint((int)(loc.lati*1E6), (int)(loc.longi*1E6)), endPoint);
 				p.lineTo(endPoint.x, endPoint.y);				
 				
 			}
