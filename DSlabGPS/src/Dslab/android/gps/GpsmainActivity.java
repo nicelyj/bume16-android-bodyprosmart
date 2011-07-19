@@ -156,8 +156,9 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
     	for(int i = 0; i<size; i++){
     		loc = pointvec.get(i);
     		Log.i("GPSRAWDATA", Double.toString(loc.lati)+", "+Double.toString(loc.longi)+", "+Double.toString(loc.alti));
+    		
     	}
-    	mHistoryOverlay.updateRawdata(pointvec);
+    	mHistoryOverlay.updateRawdata(pointvec);    	
     	
     }
     public class Loc{
@@ -185,11 +186,6 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 			fpath.mkdir();		}	
 		
 		fileName = sdCardPath+"gpstest.txt";
-		    	
-		String tmpstr="";
-		String intensitytmp = "";
-		boolean bGet = false;	
-		int fourcnt = 0;
 						
 		try{
 			FileInputStream fis = new FileInputStream(new File(fileName));			
@@ -226,8 +222,7 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 							pointvec.add(loc);							
 							cnt = 0;
 							bStart = false;							
-							}
-						
+							}						
 						strtmp = "";
 						
 						}
@@ -241,7 +236,6 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 		}catch(IOException e){
 			e.printStackTrace();
 		}
-		
 		
 		
 		
@@ -500,28 +494,37 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 			// TODO Auto-generated method stub
 			mPaint.setStyle(Paint.Style.STROKE);				
 			canvas.drawPath(mPath, mPaint);
+			Log.i("DARWMAPS","DRAWMAPS");
 			
 			return super.draw(canvas, mapView, shadow, when);
 		}
 
-
-
 		public void updateRawdata(Vector<Loc> vecloc){
 			
-			for(int i = 0 ; i < vecloc.size(); i++)
-			{				 
-				Point startPoint = new Point();
+			Point startPoint = new Point();
+			
+			Loc loc = vecloc.get(0);
+		
+			
+			int a = (int)(loc.lati*1E6);
+			int b = (int)(loc.longi*1E6);
+			
+			GeoPoint geo = new GeoPoint((int)(loc.lati*1E6), (int)(loc.longi*1E6));
+			
+			mMapview.getProjection().toPixels(new GeoPoint((int)(loc.lati*1E6), (int)(loc.longi*1E6)), startPoint);
+			Path p = new Path();			
+			p.reset();
+			p.moveTo(startPoint.x, startPoint.y);
+			
+			for(int i = 1 ; i < vecloc.size(); i++)			
+			{	
+				loc = vecloc.get(i);
 				Point endPoint = new Point();
-				Loc loc = vecloc.get(i);
-				mMapview.getProjection().toPixels(new GeoPoint((int)(loc.lati*1E6), (int)(loc.longi*1E6)), startPoint);
-				mMapview.getProjection().toPixels(new GeoPoint((int)(loc.lati*1E6), (int)(loc.longi*1E6)), endPoint);
-				
-				Path p = new Path();			
-				p.reset();
-				p.moveTo(startPoint.x, startPoint.y);
+				mMapview.getProjection().toPixels(new GeoPoint((int)(loc.lati*1E6), (int)(loc.longi*1E6)), endPoint);			
 				p.lineTo(endPoint.x, endPoint.y);				
-				mPath.addPath(p);
+				
 			}
+			mPath.addPath(p);
 			
 		}
 	}
@@ -619,27 +622,7 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 				p.lineTo(endPoint.x, endPoint.y);				
 				mPath.addPath(p);				
 			}
-		}
-		
-		public void updateRawdata(Vector<Loc> vecloc){
-			
-			for(int i = 0 ; i < vecloc.size(); i++)
-			{				 
-				Point startPoint = new Point();
-				Point endPoint = new Point();
-				Loc loc = vecloc.get(i);
-				mMapview.getProjection().toPixels(new GeoPoint((int)(loc.lati*1E6), (int)(loc.longi*1E6)), startPoint);
-				mMapview.getProjection().toPixels(new GeoPoint((int)(loc.lati*1E6), (int)(loc.longi*1E6)), endPoint);
-				
-				Path p = new Path();			
-				p.reset();
-				p.moveTo(startPoint.x, startPoint.y);
-				p.lineTo(endPoint.x, endPoint.y);				
-				mPath.addPath(p);
-			}
-			
-		}
-		
+		}		
 
 	}
 	
