@@ -83,13 +83,13 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
         setContentView(R.layout.main);
         
         //占신댐옙占쏙옙 占쏙옙占쏙옙占�        
-        //locmanager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        locmanager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         //gps 占쏙옙치占쏙옙占쏙옙 占쏙옙청
-        //locmanager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+        locmanager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
         
         //locmanager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
 
-        getGPS();
+        //getGPS();
         geocoder = new Geocoder(this,Locale.KOREA);
         
         logInit();
@@ -136,11 +136,10 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
         controller.setZoom(15);
         
         //setOverlay(geopoint);
-        //mMyOverlay = new MyOverlay(this, mapview);
-        //mapview.getOverlays().add(mMyOverlay);
-        //mMyOverlay.enableCompass();
-    	//mMyOverlay.enableMyLocation();
-    	
+        mMyOverlay = new MyOverlay(this, mapview);
+        mapview.getOverlays().add(mMyOverlay);
+        mMyOverlay.enableCompass();
+    	mMyOverlay.enableMyLocation();
     	
         
     }
@@ -158,8 +157,8 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
     	//mHistoryOverlay.updateRawdata(pointvec);  
     	mHistoryOverlay = new historyOverlay(this,mapview,pointvec);
     	mapview.getOverlays().add(mHistoryOverlay);
-    	mHistoryOverlay.enableCompass();
-    	mHistoryOverlay.enableMyLocation();
+    	//mHistoryOverlay.enableCompass();
+    	//mHistoryOverlay.enableMyLocation();
     	
     }
     public class Loc{
@@ -245,7 +244,6 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
     private static boolean result = false;
     public void getGPS(){
                 
-      
         locmanager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         
         //GPS 환경설정
@@ -496,8 +494,7 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 				boolean shadow, long when) {
 			// TODO Auto-generated method stub
 			mPath.reset();	
-			canvas.drawPath(mPath, mPaint);
-			Log.i("DARWMAPS","DRAWMAPS");			
+			canvas.drawPath(mPath, mPaint);	
 			updateRawdata(mVecloc);
 			mPaint.setStyle(Paint.Style.STROKE);				
 			canvas.drawPath(mPath, mPaint);
