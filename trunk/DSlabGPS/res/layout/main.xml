@@ -44,9 +44,13 @@
 			android:layout_width="fill_parent"
 			android:layout_height="fill_parent"
 			android:clickable="true"
-			android:apiKey="0bUUW9FNKie2cQZOFC69ye0oRL1GS-rhHFRPVtg"
-			android:focusable="true"/>
+			android:focusable="true"
+			android:apiKey="0J7bl6d5afVvv-zWisDqtRWW7HX0CKAXMn978QQ"/>
+			
 			<!-- 			HOME -->
-<!-- 			android:apiKey="0J7bl6d5afVvv-zWisDqtRWW7HX0CKAXMn978QQ" android:focusable="true"/> -->
+			<!--			android:apiKey="0bUUW9FNKie2cQZOFC69ye0oRL1GS-rhHFRPVtg"-->
+			
+			
+
     </LinearLayout>
 </LinearLayout>
