@@ -27,6 +27,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
@@ -49,21 +50,28 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 	private LocationManager locmanager;
 	private Geocoder geocoder;
 	private Location mylocation = null;
+	
 	private double lati=0;
 	private double longi=0;
 	private double alti=0;
 	private float speed=0;
 	private int mCnt=0;
 	private float mDistance=0;
+	private float mbearing=0;
 	private GeoPoint geopoint;
 	private MapView mapview;
 	private MapController controller;
 	private String fileName = "";		
 	private BufferedWriter bfw = null;
 	
+	//map path variable
 	private MyOverlay mMyOverlay;
+	private Location MyBeforeLoc;
+	private Location MyCurrentLoc;
+	ArrayList<MyPathLocation> mMyPathLocationArray;
 	private historyOverlay mHistoryOverlay;
 	
+	//layout
 	private TextView latitudeText;
 	private TextView longotudeText;
 	private TextView altitudeText;
@@ -83,13 +91,13 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
         setContentView(R.layout.main);
         
         //占신댐옙占쏙옙 占쏙옙占쏙옙占�        
-        locmanager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        //locmanager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         //gps 占쏙옙치占쏙옙占쏙옙 占쏙옙청
         //locmanager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
         
-        locmanager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
+        //locmanager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
 
-        //getGPS();
+        getGPS();
         geocoder = new Geocoder(this,Locale.KOREA);
         
         logInit();
@@ -126,14 +134,15 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 		});
         
         //icon
-        Bitmap icon = BitmapFactory.decodeResource(getResources(), R.drawable.back);
-        
+        Bitmap icon = BitmapFactory.decodeResource(getResources(), R.drawable.moveicon);
         
    	 	//map control
         mapview = (MapView)findViewById(R.id.mapview);
         mapview.setBuiltInZoomControls(true);
+        
     	
      	controller = mapview.getController();
+     	
         geopoint = new GeoPoint(INI1,INI2);       
         controller.setCenter(geopoint);	        
         controller.setZoom(15);
@@ -141,8 +150,8 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
         //setOverlay(geopoint);
         mMyOverlay = new MyOverlay(this, mapview,icon);
         mapview.getOverlays().add(mMyOverlay);
-        mMyOverlay.enableCompass();
-    	mMyOverlay.enableMyLocation();
+        //mMyOverlay.enableCompass();
+    	//mMyOverlay.enableMyLocation();
     	
         
     }
@@ -338,12 +347,10 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
     			}
     			juso.append("\n");
     			
-    			
     		} catch (IOException e) {
     			// TODO Auto-generated catch block
     			e.printStackTrace();
-    		}
-    		
+    		}    		
     		latitudeText.setText(Double.toString(lati));
     		altitudeText.setText(Double.toString(alti));
     		longotudeText.setText(Double.toString(longi));        	
@@ -382,6 +389,8 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 		+"\r\n";		
 		
 		Log.i("GPSTEST",str);
+		/////////////////////////////////////////////////////////////////////////////////////
+		//file write log
 		try {				
 			bfw.write(str);
 			bfw.flush();
@@ -390,6 +399,18 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		///////////////////
+		//draw path
+		mbearing = location.getBearing();
+		MyBeforeLoc = MyCurrentLoc;
+		MyCurrentLoc = location;
+		if(MyBeforeLoc != null && MyCurrentLoc != null && MyBeforeLoc != MyCurrentLoc)
+		{	
+			mMyPathLocationArray.add(new MyPathLocation(MyBeforeLoc, MyCurrentLoc));
+			mDistance += MyCurrentLoc.distanceTo(MyBeforeLoc);							
+		}
+		else 
+			return;
 		
 	}
 
@@ -485,7 +506,7 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 			mPaint = new Paint();
 	    	mPaint.setAntiAlias(true);
 	    	mPaint.setDither(true);
-	    	mPaint.setColor(Color.RED);
+	    	mPaint.setColor(Color.rgb(129,203,255));
 	    	mPaint.setStyle(Paint.Style.STROKE);
 	    	mPaint.setStrokeJoin(Paint.Join.ROUND);
 	    	mPaint.setStrokeCap(Paint.Cap.ROUND);
@@ -537,23 +558,19 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 	
 	//map path overlay
 	
-	
-	private class MyOverlay extends MyLocationOverlay{
+	//private class MyOverlay extends MyLocationOverlay{
+	private class MyOverlay extends Overlay{
 		
-		Location MyBeforeLoc;
-		Location MyCurrentLoc;
 		Path mPath;
 		Paint mPaint;
 		Point mPoint;
 		MapView mMapview;
 		Context mCtx;
 		Bitmap mIcon;
-		
-		ArrayList<MyPathLocation> mMyPathLocationArray;
-		
 
+		
 		public MyOverlay(Context context, MapView mapView, Bitmap icon) {
-			super(context, mapView);
+			super();
 			// TODO Auto-generated constructor stub
 			
 			mPath = new Path();
@@ -561,21 +578,20 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 			mPaint = new Paint();
 	    	mPaint.setAntiAlias(true);
 	    	mPaint.setDither(true);
-	    	mPaint.setColor(Color.RED);
+	    	mPaint.setColor(Color.rgb(129,203,255));
 	    	mPaint.setStyle(Paint.Style.STROKE);
 	    	mPaint.setStrokeJoin(Paint.Join.ROUND);
 	    	mPaint.setStrokeCap(Paint.Cap.ROUND);
 	    	mPaint.setStrokeWidth(3);
 	    	mPaint.setTextSize(20);
 	    	mPaint.setStyle(Paint.Style.FILL);
+	    	
 	    	mMyPathLocationArray = new ArrayList<MyPathLocation>();
 
 	    	mCtx = context;
 	    	mMapview = mapView;
 	    	mIcon = icon;
 		}
-
-		
 
 		@Override
 		public boolean draw(Canvas canvas, MapView mapView,
@@ -594,35 +610,14 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 				canvas.drawTextOnPath(String.valueOf(mDistance), mPath, 0, 0, mPaint);
 				
 				if(!shadow){					
-					canvas.drawBitmap(mIcon, mPoint.x,mPoint.y,null);
+					canvas.drawBitmap(resizeBmp(mIcon), mPoint.x-20,mPoint.y-20,null);
+				
 				}
 				
-			}
-			
-			
-			
-			return super.draw(canvas, mapView, shadow, when);			
-			
+			}						
+			return super.draw(canvas, mapView, shadow, when);
 		}
 		
-		
-		@Override
-		public synchronized void onLocationChanged(Location location) {
-			// TODO Auto-generated method stub
-			super.onLocationChanged(location);
-			
-			MyBeforeLoc = MyCurrentLoc;
-			MyCurrentLoc = location;
-			if(MyBeforeLoc != null && MyCurrentLoc != null && MyBeforeLoc != MyCurrentLoc)
-			{	
-				mMyPathLocationArray.add(new MyPathLocation(MyBeforeLoc, MyCurrentLoc));
-				mDistance += MyCurrentLoc.distanceTo(MyBeforeLoc);
-								
-			}
-			else 
-				return;
-		}
-
 		public void updatePath()
 		{
 			for(int i = 0 ; i < mMyPathLocationArray.size() ; i++)
@@ -691,5 +686,24 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
 		}
 	}
     
-    
+	private Bitmap resizeBmp(Bitmap bmp){
+		
+		Bitmap bmpOrg = bmp;
+		
+		int width = bmpOrg.getWidth();
+		int height = bmpOrg.getHeight();
+		int newWidth = 40;
+		int newHeight = 40;
+		
+		float scaleWidth = ((float)newWidth)/width;
+		float scaleHeight = ((float)newHeight)/height;
+		
+		Matrix matrix = new Matrix();
+		matrix.postScale(scaleWidth, scaleHeight);
+		matrix.postRotate(mbearing);
+		
+		Bitmap resizedBmp = Bitmap.createBitmap(bmpOrg,0,0,width,height,matrix,true);
+				
+		return resizedBmp;		
+	}
 }
