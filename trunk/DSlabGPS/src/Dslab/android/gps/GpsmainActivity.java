@@ -166,12 +166,14 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
     		Log.i("GPSRAWDATA", Double.toString(loc.lati)+", "+Double.toString(loc.longi)+", "+Double.toString(loc.alti));
     		
     	}
-    	//mHistoryOverlay.updateRawdata(pointvec);  
-    	mHistoryOverlay = new historyOverlay(this,mapview,pointvec);
-    	mapview.getOverlays().add(mHistoryOverlay);
-    	controller.setCenter(new GeoPoint((int)(loc.lati*1E6), (int)(loc.longi*1E6)));
-    	//mHistoryOverlay.enableCompass();
-    	//mHistoryOverlay.enableMyLocation();
+    	//mHistoryOverlay.updateRawdata(pointvec);
+    	if(mHistoryOverlay == null){
+    		mHistoryOverlay = new historyOverlay(this,mapview,pointvec);
+        	mapview.getOverlays().add(mHistoryOverlay);
+        	controller.setCenter(new GeoPoint((int)(loc.lati*1E6), (int)(loc.longi*1E6)));
+        	//mHistoryOverlay.enableCompass();
+        	//mHistoryOverlay.enableMyLocation();    		
+    	}
     	if(!mapview.isSatellite())
     		mapview.setSatellite(true);
     	else
