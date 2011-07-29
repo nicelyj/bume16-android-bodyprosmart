@@ -90,6 +90,7 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
+
         //占신댐옙占쏙옙 占쏙옙占쏙옙占�        
         //locmanager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         //gps 占쏙옙치占쏙옙占쏙옙 占쏙옙청
@@ -155,7 +156,20 @@ public class GpsmainActivity extends MapActivity implements LocationListener {
     	
         
     }
-    private void loadLocations(){ 
+    
+    
+    @Override
+	public void finish() {
+		// TODO Auto-generated method stub
+		super.finish();
+		
+		System.exit(0);
+		//ActivityManager am = (ActivityManager)getSystemService(ACTIVITY_SERVICE);
+		//am.restartPackage(getPackageName());
+	}
+
+
+	private void loadLocations(){ 
     	
     	loadRawPoint();
     	
